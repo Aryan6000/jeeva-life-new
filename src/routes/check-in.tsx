@@ -59,50 +59,62 @@ function CheckInScreen() {
     <MobileShell bottomNav={false}>
       <AppBar title="Daily Check-in" />
 
-      <div className="jl-card px-4 py-5">
-        <p className="text-center text-[14px] font-medium">How are you feeling right now?</p>
+      <div className="px-1 py-4">
+        <h2 className="text-[20px] font-semibold text-[#112A27] mb-5">How are you feeling right now?</h2>
 
-        <div className="mt-4 divide-y divide-border">
-          <RatingRow
-            icon={<Cloud className="size-4" strokeWidth={1.8} />}
-            label="Stress"
-            value={values.stress}
-            onChange={(v) => setValues((s) => ({ ...s, stress: v }))}
-          />
-          <RatingRow
-            icon={<Zap className="size-4" strokeWidth={1.8} />}
-            label="Energy"
-            value={values.energy}
-            onChange={(v) => setValues((s) => ({ ...s, energy: v }))}
-            tone="peach"
-          />
-          <RatingRow
-            icon={<Target className="size-4" strokeWidth={1.8} />}
-            label="Focus"
-            value={values.focus}
-            onChange={(v) => setValues((s) => ({ ...s, focus: v }))}
-            tone="mint"
-          />
-          <RatingRow
-            icon={<Smile className="size-4" strokeWidth={1.8} />}
-            label="Mood"
-            value={values.mood}
-            onChange={(v) => setValues((s) => ({ ...s, mood: v }))}
-            tone="peach"
-          />
+        <div className="rounded-[24px] border border-[#EAE6DF]/50 bg-white p-5 shadow-sm">
+          <div className="divide-y divide-[#EAE6DF]/60">
+            <RatingRow
+              icon={<Cloud className="size-[22px]" strokeWidth={1.5} />}
+              label="Stress"
+              value={values.stress}
+              onChange={(v) => setValues((s) => ({ ...s, stress: v }))}
+            />
+            <RatingRow
+              icon={<Zap className="size-[22px]" strokeWidth={1.5} />}
+              label="Energy"
+              value={values.energy}
+              onChange={(v) => setValues((s) => ({ ...s, energy: v }))}
+              tone="peach"
+            />
+            <RatingRow
+              icon={<Target className="size-[22px]" strokeWidth={1.5} />}
+              label="Focus"
+              value={values.focus}
+              onChange={(v) => setValues((s) => ({ ...s, focus: v }))}
+              tone="mint"
+            />
+            <RatingRow
+              icon={<Smile className="size-[22px]" strokeWidth={1.5} />}
+              label="Mood"
+              value={values.mood}
+              onChange={(v) => setValues((s) => ({ ...s, mood: v }))}
+              tone="peach"
+            />
+          </div>
+        </div>
+
+        {todayCheckIn ? (
+          <p className="pt-4 text-center text-[13px] text-[#60726F]">
+            You already checked in today. Saving again updates the same record.
+          </p>
+        ) : null}
+
+        <div className="pt-8 pb-10 relative z-10">
+          <PrimaryButton onClick={submit} disabled={!complete} className="h-[52px] rounded-[16px] text-[16px] bg-[#124B43] hover:bg-[#0E3E37]">
+            Save today's check-in
+          </PrimaryButton>
         </div>
       </div>
-
-      {todayCheckIn ? (
-        <p className="pt-3 text-center text-[11px] text-muted-foreground">
-          You already checked in today. Saving again updates the same record.
-        </p>
-      ) : null}
-
-      <div className="pt-6">
-        <PrimaryButton onClick={submit} disabled={!complete}>
-          Save today&apos;s check-in
-        </PrimaryButton>
+      
+      {/* Decorative leaves at bottom */}
+      <div className="fixed bottom-0 right-0 z-0 pointer-events-none opacity-80">
+        <svg width="240" height="180" viewBox="0 0 240 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 180C40 140 100 120 180 180" fill="#D4E1CB" opacity="0.4" />
+          <path d="M50 180C90 120 160 100 240 180" fill="#EEF4EB" opacity="0.6" />
+          <path d="M160 180C160 130 200 90 240 70C230 110 210 140 190 180" fill="#60726F" opacity="0.8" />
+          <path d="M190 180C170 120 190 80 230 50C210 90 200 130 190 180" fill="#124B43" opacity="0.7" />
+        </svg>
       </div>
     </MobileShell>
   );

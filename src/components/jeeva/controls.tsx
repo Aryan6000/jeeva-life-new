@@ -57,15 +57,15 @@ export function RatingRow({
   tone?: "primary" | "mint" | "peach";
 }) {
   const toneClass =
-    tone === "mint" ? "bg-mint text-mint-foreground" : tone === "peach" ? "bg-peach text-peach-foreground" : "bg-primary-soft text-primary";
+    tone === "mint" ? "bg-[#EEF4EB] text-[#124B43]" : tone === "peach" ? "bg-[#FFF2EC] text-[#EF755C]" : "bg-[#F3F7F5] text-[#124B43]";
 
   return (
-    <div className="flex items-center gap-3 py-3">
-      <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full", toneClass)}>
+    <div className="flex items-center gap-4 py-4">
+      <span className={cn("flex size-[42px] shrink-0 items-center justify-center rounded-full", toneClass)}>
         {icon}
       </span>
-      <span className="w-16 shrink-0 text-[13px] font-medium">{label}</span>
-      <div className="flex flex-1 items-center justify-end gap-1.5">
+      <span className="w-16 shrink-0 text-[16px] font-medium text-[#112A27]">{label}</span>
+      <div className="flex flex-1 items-center justify-end gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -74,10 +74,10 @@ export function RatingRow({
             aria-pressed={value === n}
             onClick={() => onChange(n)}
             className={cn(
-              "flex size-8 items-center justify-center rounded-full text-[13px] transition-colors",
+              "flex size-9 items-center justify-center rounded-full text-[15px] font-medium transition-colors border",
               value === n
-                ? "bg-primary font-semibold text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted",
+                ? "bg-[#112A27] border-[#112A27] text-white"
+                : "border-[#EAE6DF] text-[#112A27] bg-white hover:bg-gray-50",
             )}
           >
             {n}

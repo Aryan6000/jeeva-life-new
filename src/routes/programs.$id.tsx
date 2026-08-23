@@ -52,74 +52,76 @@ function ProgrammeParticipation() {
     <MobileShell bottomNav={false}>
       <AppBar title="Programme Participation" />
 
-      <div className="jl-card bg-primary-soft/60 p-4">
-        <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background text-primary">
-            <Calendar className="size-5" strokeWidth={1.7} />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-semibold leading-snug text-primary-dark">
-              {programme.name}
-            </h2>
-            <p className="mt-1 text-[12px] text-muted-foreground">{programme.organisation}</p>
+      <div className="px-1 py-4">
+        <div className="rounded-[24px] border border-[#EAE6DF]/80 bg-[#FAF7F2] p-5">
+          <div className="flex items-start gap-4">
+            <span className="flex size-[44px] shrink-0 items-center justify-center rounded-[14px] border border-[#EAE6DF] bg-white text-[#112A27]">
+              <Calendar className="size-6" strokeWidth={1.5} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-[17px] font-semibold leading-[1.3] text-[#112A27]">
+                {programme.name}
+              </h2>
+              <p className="mt-1.5 text-[15px] text-[#60726F]">{programme.organisation}</p>
+            </div>
+          </div>
+          <div className="mt-6 space-y-3 text-[14px] text-[#60726F] font-medium">
+            <p className="flex items-center gap-3">
+              <Calendar className="size-5 text-[#112A27]" strokeWidth={1.5} />
+              {programme.dates}
+            </p>
+            <p className="flex items-center gap-3">
+              <MapPin className="size-5 text-[#112A27]" strokeWidth={1.5} />
+              {programme.venue}
+            </p>
           </div>
         </div>
-        <div className="mt-4 space-y-1.5 text-[12px] text-muted-foreground">
-          <p className="flex items-center gap-2">
-            <Calendar className="size-3.5" strokeWidth={1.8} />
-            {programme.dates}
-          </p>
-          <p className="flex items-center gap-2">
-            <MapPin className="size-3.5" strokeWidth={1.8} />
-            {programme.venue}
-          </p>
-        </div>
-      </div>
 
-      <h3 className="pb-2 pt-6 text-[13px] font-semibold">Will you be participating?</h3>
-      <div className="space-y-2.5">
-        {(
-          [
-            { key: "joined", label: "Yes, I'm joining" },
-            { key: "declined", label: "No, not this time" },
-          ] as const
-        ).map((option) => (
-          <button
-            key={option.key}
-            type="button"
-            aria-pressed={choice === option.key}
-            onClick={() => setChoice(option.key)}
-            className={cn(
-              "flex h-[52px] w-full items-center gap-3 rounded-xl border px-4 text-[14px] transition-colors",
-              choice === option.key
-                ? "border-primary bg-primary-soft font-medium text-primary-dark"
-                : "border-border bg-surface text-foreground hover:bg-muted",
-            )}
-          >
-            <span
+        <h3 className="pb-4 pt-8 text-[17px] font-bold text-[#112A27]">Will you be participating?</h3>
+        <div className="space-y-3">
+          {(
+            [
+              { key: "joined", label: "Yes, I'm joining" },
+              { key: "declined", label: "No, not this time" },
+            ] as const
+          ).map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              aria-pressed={choice === option.key}
+              onClick={() => setChoice(option.key)}
               className={cn(
-                "flex size-4.5 items-center justify-center rounded-full border",
-                choice === option.key ? "border-primary" : "border-border",
+                "flex h-[60px] w-full items-center gap-4 rounded-[16px] border px-5 text-[15px] transition-colors",
+                choice === option.key
+                  ? "border-[#124B43]/30 bg-[#EEF4EB] font-medium text-[#112A27]"
+                  : "border-[#EAE6DF] bg-white text-[#112A27] hover:bg-gray-50",
               )}
             >
-              {choice === option.key ? <span className="size-2.5 rounded-full bg-primary" /> : null}
-            </span>
-            {option.label}
-          </button>
-        ))}
-      </div>
+              <span
+                className={cn(
+                  "flex size-[22px] items-center justify-center rounded-full border-[1.5px]",
+                  choice === option.key ? "border-[#124B43]" : "border-[#C4CCCB]",
+                )}
+              >
+                {choice === option.key ? <span className="size-3 rounded-full bg-[#124B43]" /> : null}
+              </span>
+              {option.label}
+            </button>
+          ))}
+        </div>
 
-      <div className="jl-card mt-4 flex items-start gap-3 bg-mint p-3.5">
-        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-mint-foreground" strokeWidth={1.9} />
-        <p className="text-[12px] text-mint-foreground">
-          Your response is private and used only for programme planning and reporting.
-        </p>
-      </div>
+        <div className="mt-6 flex items-start gap-3 rounded-[16px] bg-[#EEF4EB] p-4 border border-[#124B43]/10">
+          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#124B43]" strokeWidth={1.5} />
+          <p className="text-[13px] text-[#124B43] font-medium leading-snug pr-4">
+            Your response is private and used only for programme planning and reporting.
+          </p>
+        </div>
 
-      <div className="pt-6">
-        <PrimaryButton onClick={submit} disabled={!choice}>
-          Save participation
-        </PrimaryButton>
+        <div className="pt-8 pb-10">
+          <PrimaryButton onClick={submit} disabled={!choice} className="h-[52px] rounded-[16px] text-[16px] bg-[#124B43] hover:bg-[#0E3E37]">
+            Save participation
+          </PrimaryButton>
+        </div>
       </div>
     </MobileShell>
   );

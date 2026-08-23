@@ -38,17 +38,26 @@ const NAV = [
 
 export function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[620px] items-stretch justify-between px-2 py-2">
+    <nav className="fixed inset-x-0 bottom-0 z-30 bg-[#FCFAFA] pt-2 border-t border-[#EAE6DF]/50">
+      <div className="mx-auto flex w-full max-w-[620px] items-stretch justify-around px-2 pb-2">
         {NAV.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
-            className="jl-tap flex flex-1 flex-col items-center justify-center gap-1 rounded-md py-1 text-[11px] font-medium text-muted-foreground transition-colors data-[status=active]:text-primary"
-            activeProps={{ "data-status": "active" }}
+            className="jl-tap relative flex flex-1 flex-col items-center justify-center gap-1.5 rounded-md py-1 text-[12px] font-medium text-[#60726F] transition-colors [&.active]:text-[#112A27]"
+            activeProps={{ className: "active" }}
           >
-            <Icon className="size-5" strokeWidth={1.8} />
-            {label}
+            {({ isActive }) => (
+              <>
+                <div className="relative flex flex-col items-center">
+                  <Icon className="size-[22px]" strokeWidth={isActive ? 2.5 : 1.5} />
+                  {isActive && (
+                    <span className="absolute -bottom-3 h-[2px] w-6 rounded-full bg-[#112A27]" />
+                  )}
+                </div>
+                <span className={isActive ? "mt-1 font-semibold" : "mt-1 font-medium"}>{label}</span>
+              </>
+            )}
           </Link>
         ))}
       </div>

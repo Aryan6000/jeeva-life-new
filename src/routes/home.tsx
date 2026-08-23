@@ -39,8 +39,8 @@ function HomeScreen() {
 
   return (
     <MobileShell>
-      <header className="flex items-center justify-between py-4">
-        <h1 className="text-[20px] font-semibold tracking-tight">Hi, {firstName}</h1>
+      <header className="flex items-center justify-between py-6">
+        <h1 className="text-[28px] font-bold tracking-tight text-[#112A27]">Hi, {firstName}</h1>
         <NotificationBell />
       </header>
 
@@ -50,37 +50,42 @@ function HomeScreen() {
           <div className="jl-card h-24 animate-pulse" />
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="jl-card relative overflow-hidden p-4">
-            <div className="pointer-events-none absolute -right-6 -top-6 size-32 rounded-full bg-mint opacity-70" />
-            <div className="relative">
-              <p className="text-[12px] text-muted-foreground">Today&apos;s wellbeing</p>
+        <div className="space-y-5">
+          <div className="relative overflow-hidden rounded-[20px] bg-[#144C44] p-5 text-white shadow-sm">
+            {/* Minimal SVG leaf approximation */}
+            <svg className="pointer-events-none absolute -right-4 -top-8 w-48 h-48 opacity-90 text-[#D4E1CB]" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="50" fill="currentColor" />
+              <path d="M 50 100 C 50 50, 0 50, 0 50 C 0 100, 50 100, 50 100 Z" fill="#60726F" opacity="0.3" />
+              <path d="M 50 100 C 50 50, 100 50, 100 50 C 100 100, 50 100, 50 100 Z" fill="#124B43" opacity="0.1" />
+            </svg>
+            <div className="relative z-10">
+              <p className="text-[14px] font-medium text-white/90">Today's wellbeing</p>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-[30px] font-semibold leading-none">
+                <span className="text-[48px] font-semibold leading-none">
                   {currentScore ?? "—"}
                 </span>
-                <span className="text-[13px] text-muted-foreground">/100</span>
+                <span className="text-[16px] font-medium text-white/90">/100</span>
                 {currentScore !== null ? (
-                  <span className="rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-foreground">
+                  <span className="rounded-full bg-[#D4E1CB] px-3 py-1 text-[13px] font-semibold text-[#144C44]">
                     {scoreBand(currentScore)}
                   </span>
                 ) : null}
               </div>
-              <p className="mt-1 text-[12px] text-muted-foreground">
+              <p className="mt-2 text-[14px] text-white/90 font-medium">
                 Keep going, small steps matter.
               </p>
               {todayCheckIn ? (
                 <Link
                   to="/check-in"
-                  className="mt-4 flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-mint text-[14px] font-semibold text-mint-foreground"
+                  className="mt-6 flex h-[48px] w-full items-center justify-center gap-2 rounded-[14px] bg-[#ED7458] text-[15px] font-semibold text-white transition-colors hover:bg-[#d9654b]"
                 >
-                  <CheckCircle2 className="size-4" strokeWidth={1.9} />
+                  <CheckCircle2 className="size-5" strokeWidth={2} />
                   Checked in — review today
                 </Link>
               ) : (
                 <Link
                   to="/check-in"
-                  className="mt-4 flex h-[46px] w-full items-center justify-center rounded-xl bg-primary text-[14px] font-semibold text-primary-foreground transition-colors hover:bg-primary-dark"
+                  className="mt-6 flex h-[48px] w-full items-center justify-center rounded-[14px] bg-[#ED7458] text-[15px] font-semibold text-white transition-colors hover:bg-[#d9654b]"
                 >
                   Check in now
                 </Link>
@@ -89,70 +94,70 @@ function HomeScreen() {
           </div>
 
           <section>
-            <h2 className="pb-2 text-[13px] font-semibold">Recommended for you</h2>
-            <Link to="/activities/log" className="jl-card flex items-center gap-3 p-3.5">
-              <span className="flex size-10 items-center justify-center rounded-full bg-primary-soft text-primary">
-                <Flower2 className="size-5" strokeWidth={1.7} />
+            <h2 className="pb-3 text-[16px] font-bold text-[#112A27]">Recommended for you</h2>
+            <Link to="/activities/log" className="flex items-center gap-4 rounded-[20px] border border-[#EAE6DF] bg-white p-4 shadow-sm transition-all hover:bg-gray-50/50">
+              <span className="flex size-12 items-center justify-center rounded-full bg-[#EEF4EB] text-[#124B43]">
+                <Flower2 className="size-6" strokeWidth={1.5} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-medium">Mindful meditation · 20 min</span>
-                <span className="block text-[12px] text-muted-foreground">
+                <span className="block text-[15px] font-semibold text-[#112A27]">Mindful meditation · 20 min</span>
+                <span className="mt-0.5 block text-[13px] text-[#60726F]">
                   Calm your mind, improve focus
                 </span>
               </span>
-              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+              <ChevronRight className="size-5 shrink-0 text-[#112A27]" strokeWidth={1.5} />
             </Link>
           </section>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="flex flex-col justify-between">
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="flex flex-col justify-between rounded-[20px] border-[#EAE6DF] p-4 shadow-sm">
               <div>
-                <p className="text-[12px] font-medium">Consistency</p>
-                <p className="text-[11px] text-muted-foreground">This week</p>
+                <p className="text-[15px] font-medium text-[#112A27]">Consistency</p>
+                <p className="text-[13px] text-[#60726F]">This week</p>
               </div>
-              <div className="mt-3 flex items-end justify-between">
-                <span className="text-[18px] font-semibold">
-                  {consistencyDays}/7 <span className="text-[12px] font-normal text-muted-foreground">days</span>
+              <div className="mt-6 flex items-end justify-between">
+                <span className="text-[28px] font-semibold tracking-tight text-[#112A27] leading-none">
+                  {consistencyDays}/7 <span className="text-[14px] font-medium text-[#60726F]">days</span>
                 </span>
                 <ConsistencyRing days={consistencyDays} />
               </div>
             </Card>
 
-            <Card className="flex flex-col justify-between">
+            <Card className="flex flex-col justify-between rounded-[20px] border-[#EAE6DF] p-4 shadow-sm">
               <div>
-                <p className="text-[12px] font-medium">Progress</p>
-                <p className="text-[11px] text-muted-foreground">vs baseline</p>
+                <p className="text-[15px] font-medium text-[#112A27]">Progress</p>
+                <p className="text-[13px] text-[#60726F]">vs baseline</p>
               </div>
-              <div className="mt-3 flex items-end justify-between">
-                <span className="text-[18px] font-semibold">
-                  {change === null ? "—" : `${change >= 0 ? "+" : ""}${change}`}{" "}
-                  <span className="text-[12px] font-normal text-muted-foreground">points</span>
+              <div className="mt-6 flex items-end justify-between">
+                <span className="text-[28px] font-semibold tracking-tight text-[#112A27] leading-none">
+                  {change === null ? "—" : `${change >= 0 ? "+" : ""}${change}`}
+                  <span className="text-[14px] font-medium text-[#60726F] ml-1">points</span>
                 </span>
-                <span className="flex size-8 items-center justify-center rounded-full bg-mint text-mint-foreground">
-                  <TrendingUp className="size-4" strokeWidth={1.9} />
+                <span className="flex size-[34px] items-center justify-center rounded-full bg-[#D4E1CB] text-[#124B43] mb-1">
+                  <TrendingUp className="size-[18px]" strokeWidth={2} />
                 </span>
               </div>
             </Card>
           </div>
 
           <section>
-            <h2 className="pb-2 text-[13px] font-semibold">Quick actions</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <Link to="/activities/log" className="jl-card flex items-center gap-2 p-3.5">
-                <span className="flex size-8 items-center justify-center rounded-full bg-primary-soft text-primary">
-                  <Plus className="size-4" strokeWidth={2} />
+            <h2 className="pb-3 text-[16px] font-bold text-[#112A27]">Quick actions</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <Link to="/activities/log" className="flex items-center gap-3 rounded-[20px] border border-[#EAE6DF] bg-white p-4 shadow-sm transition-all hover:bg-gray-50/50">
+                <span className="flex size-10 items-center justify-center rounded-full bg-[#EEF4EB] text-[#124B43]">
+                  <Plus className="size-5" strokeWidth={2} />
                 </span>
-                <span className="text-[13px] font-medium">Log activity</span>
+                <span className="text-[14px] font-semibold text-[#112A27]">Log activity</span>
               </Link>
               <Link
                 to="/programs/$id"
                 params={{ id: "cche-2026" }}
-                className="jl-card flex items-center gap-2 p-3.5"
+                className="flex items-center gap-3 rounded-[20px] border border-[#EAE6DF] bg-white p-4 shadow-sm transition-all hover:bg-gray-50/50"
               >
-                <span className="flex size-8 items-center justify-center rounded-full bg-peach text-peach-foreground">
-                  <Calendar className="size-4" strokeWidth={1.8} />
+                <span className="flex size-10 items-center justify-center rounded-full bg-[#FFF2EC] text-[#EF755C]">
+                  <Calendar className="size-5" strokeWidth={1.8} />
                 </span>
-                <span className="text-[13px] font-medium leading-tight">Tezpur programme</span>
+                <span className="text-[14px] font-semibold leading-tight text-[#112A27]">Tezpur<br/>programme</span>
               </Link>
             </div>
           </section>
@@ -164,17 +169,17 @@ function HomeScreen() {
 
 function ConsistencyRing({ days }: { days: number }) {
   const pct = Math.min(days / 7, 1);
-  const r = 14;
+  const r = 16;
   const c = 2 * Math.PI * r;
   return (
-    <svg width={36} height={36} className="-rotate-90">
-      <circle cx={18} cy={18} r={r} fill="none" stroke="var(--color-primary-soft)" strokeWidth={4} />
+    <svg width={36} height={36} className="-rotate-90 mb-1">
+      <circle cx={18} cy={18} r={r} fill="none" stroke="#EEF4EB" strokeWidth={4} />
       <circle
         cx={18}
         cy={18}
         r={r}
         fill="none"
-        stroke="var(--color-mint-foreground)"
+        stroke="#D4E1CB"
         strokeWidth={4}
         strokeLinecap="round"
         strokeDasharray={c}
