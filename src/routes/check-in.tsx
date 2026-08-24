@@ -29,6 +29,7 @@ function CheckInScreen() {
   const navigate = useNavigate();
   const { todayCheckIn, saveCheckIn } = useJeeva();
   const [values, setValues] = useState<Values>({ stress: null, energy: null, focus: null, mood: null });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (todayCheckIn) {
@@ -43,16 +44,21 @@ function CheckInScreen() {
 
   const complete = Object.values(values).every((v) => v !== null);
 
-  const submit = () => {
-    if (!complete) return;
-    saveCheckIn({
-      stress: values.stress!,
-      energy: values.energy!,
-      focus: values.focus!,
-      mood: values.mood!,
-    });
-    toast.success(todayCheckIn ? "Today's check-in updated" : "Today's check-in saved");
-    navigate({ to: "/home" });
+  const submit = async () => {
+    if (!complete || saving) return;
+    setSaving(true);
+    try {
+      await saveCheckIn({
+        stress: values.stress!,
+        energy: values.energy!,
+        focus: values.focus!,
+        mood: values.mood!,
+      });
+      toast.success(todayCheckIn ? "Today's check-in updated" : "Today's check-in saved");
+      navigate({ to: "/home" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -65,7 +71,7 @@ function CheckInScreen() {
         <div className="mt-4 divide-y divide-border">
           <RatingRow
             icon={<Cloud className="size-4" strokeWidth={1.8} />}
-            label="Stress"
+            label="Calm"
             value={values.stress}
             onChange={(v) => setValues((s) => ({ ...s, stress: v }))}
           />
@@ -100,8 +106,8 @@ function CheckInScreen() {
       ) : null}
 
       <div className="pt-6">
-        <PrimaryButton onClick={submit} disabled={!complete}>
-          Save today&apos;s check-in
+        <PrimaryButton onClick={submit} disabled={!complete || saving}>
+          {saving ? "Saving…" : "Save today's check-in"}
         </PrimaryButton>
       </div>
     </MobileShell>

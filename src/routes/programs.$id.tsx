@@ -1,24 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Calendar, MapPin, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Calendar, Loader2, MapPin, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AppBar, MobileShell, PrimaryButton } from "@/components/jeeva/shell";
-import { TEZPUR_PROGRAMME, UPCOMING_PROGRAMMES } from "@/lib/jeeva/demo";
 import { useJeeva } from "@/lib/jeeva/store";
+import { getProgrammeById } from "@/lib/jeeva/firestore";
+import type { Programme } from "@/lib/jeeva/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/programs/$id")({
   head: () => ({
     meta: [
       { title: "Programme participation — JeevaLife" },
-      {
-        name: "description",
-        content: "Review programme dates and venue, then record whether you are participating. Your response stays private.",
-      },
+      { name: "description", content: "Review programme details and record your participation." },
       { property: "og:title", content: "Programme participation — JeevaLife" },
-      { property: "og:description", content: "Join a JeevaLife programme and record your participation." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProgrammeParticipation,
@@ -29,24 +25,55 @@ function ProgrammeParticipation() {
   const navigate = useNavigate();
   const { state, setParticipation } = useJeeva();
 
-  const programme =
-    id === TEZPUR_PROGRAMME.id
-      ? TEZPUR_PROGRAMME
-      : (UPCOMING_PROGRAMMES.find((p) => p.id === id) ?? TEZPUR_PROGRAMME);
-
-  const existing = state.participations[programme.id];
+  const [programme, setProgramme] = useState<Programme | null>(null);
+  const [loading, setLoading] = useState(true);
   const [choice, setChoice] = useState<"joined" | "declined" | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (existing) setChoice(existing.status);
-  }, [existing]);
+    getProgrammeById(id)
+      .then(setProgramme)
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  const submit = () => {
-    if (!choice) return;
-    setParticipation(programme.id, choice);
-    toast.success(choice === "joined" ? "Participation saved" : "Response saved");
-    navigate({ to: "/programs" });
+  useEffect(() => {
+    if (programme) {
+      const existing = state.participations[programme.id];
+      if (existing) setChoice(existing.status);
+    }
+  }, [programme, state.participations]);
+
+  const submit = async () => {
+    if (!choice || saving || !programme) return;
+    setSaving(true);
+    try {
+      await setParticipation(programme.id, choice);
+      toast.success(choice === "joined" ? "Participation saved" : "Response saved");
+      navigate({ to: "/programs" });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <MobileShell bottomNav={false}>
+        <AppBar title="Programme Participation" />
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
+      </MobileShell>
+    );
+  }
+
+  if (!programme) {
+    return (
+      <MobileShell bottomNav={false}>
+        <AppBar title="Programme Participation" />
+        <p className="py-16 text-center text-[13px] text-muted-foreground">Programme not found.</p>
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell bottomNav={false}>
@@ -58,9 +85,7 @@ function ProgrammeParticipation() {
             <Calendar className="size-5" strokeWidth={1.7} />
           </span>
           <div className="min-w-0">
-            <h2 className="text-[15px] font-semibold leading-snug text-primary-dark">
-              {programme.name}
-            </h2>
+            <h2 className="text-[15px] font-semibold leading-snug text-primary-dark">{programme.name}</h2>
             <p className="mt-1 text-[12px] text-muted-foreground">{programme.organisation}</p>
           </div>
         </div>
@@ -78,12 +103,7 @@ function ProgrammeParticipation() {
 
       <h3 className="pb-2 pt-6 text-[13px] font-semibold">Will you be participating?</h3>
       <div className="space-y-2.5">
-        {(
-          [
-            { key: "joined", label: "Yes, I'm joining" },
-            { key: "declined", label: "No, not this time" },
-          ] as const
-        ).map((option) => (
+        {([{ key: "joined", label: "Yes, I'm joining" }, { key: "declined", label: "No, not this time" }] as const).map((option) => (
           <button
             key={option.key}
             type="button"
@@ -96,13 +116,8 @@ function ProgrammeParticipation() {
                 : "border-border bg-surface text-foreground hover:bg-muted",
             )}
           >
-            <span
-              className={cn(
-                "flex size-4.5 items-center justify-center rounded-full border",
-                choice === option.key ? "border-primary" : "border-border",
-              )}
-            >
-              {choice === option.key ? <span className="size-2.5 rounded-full bg-primary" /> : null}
+            <span className={cn("flex size-4.5 items-center justify-center rounded-full border", choice === option.key ? "border-primary" : "border-border")}>
+              {choice === option.key && <span className="size-2.5 rounded-full bg-primary" />}
             </span>
             {option.label}
           </button>
@@ -117,8 +132,8 @@ function ProgrammeParticipation() {
       </div>
 
       <div className="pt-6">
-        <PrimaryButton onClick={submit} disabled={!choice}>
-          Save participation
+        <PrimaryButton onClick={submit} disabled={!choice || saving}>
+          {saving ? "Saving…" : "Save participation"}
         </PrimaryButton>
       </div>
     </MobileShell>

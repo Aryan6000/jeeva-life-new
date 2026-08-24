@@ -27,11 +27,9 @@ function HomeScreen() {
   const baselineScore = state.baseline?.score ?? null;
 
   const currentScore = todayCheckIn
-    ? Math.round(
-        (((6 - todayCheckIn.stress) + todayCheckIn.energy + todayCheckIn.focus + todayCheckIn.mood) /
-          4) *
-          20,
-      )
+    ? Math.min(100, Math.round(
+        (todayCheckIn.stress + todayCheckIn.energy + todayCheckIn.focus + todayCheckIn.mood) * 5,
+      ))
     : baselineScore;
 
   const change =
@@ -51,28 +49,29 @@ function HomeScreen() {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="jl-card relative overflow-hidden p-4">
-            <div className="pointer-events-none absolute -right-6 -top-6 size-32 rounded-full bg-mint opacity-70" />
+          <div className="jl-card relative overflow-hidden bg-primary p-4 text-primary-foreground">
+            <div className="pointer-events-none absolute -right-4 -top-4 size-28 rounded-full bg-white/10" />
+            <div className="pointer-events-none absolute -right-10 top-6 size-20 rounded-full bg-white/8" />
             <div className="relative">
-              <p className="text-[12px] text-muted-foreground">Today&apos;s wellbeing</p>
+              <p className="text-[12px] text-white/70">Today&apos;s wellbeing</p>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-[30px] font-semibold leading-none">
+                <span className="text-[36px] font-semibold leading-none text-white">
                   {currentScore ?? "—"}
                 </span>
-                <span className="text-[13px] text-muted-foreground">/100</span>
+                <span className="text-[13px] text-white/70">/100</span>
                 {currentScore !== null ? (
-                  <span className="rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-foreground">
+                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium text-white">
                     {scoreBand(currentScore)}
                   </span>
                 ) : null}
               </div>
-              <p className="mt-1 text-[12px] text-muted-foreground">
+              <p className="mt-1 text-[12px] text-white/70">
                 Keep going, small steps matter.
               </p>
               {todayCheckIn ? (
                 <Link
                   to="/check-in"
-                  className="mt-4 flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-mint text-[14px] font-semibold text-mint-foreground"
+                  className="mt-4 flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-white/20 text-[14px] font-semibold text-white"
                 >
                   <CheckCircle2 className="size-4" strokeWidth={1.9} />
                   Checked in — review today
@@ -80,7 +79,8 @@ function HomeScreen() {
               ) : (
                 <Link
                   to="/check-in"
-                  className="mt-4 flex h-[46px] w-full items-center justify-center rounded-xl bg-primary text-[14px] font-semibold text-primary-foreground transition-colors hover:bg-primary-dark"
+                  className="mt-4 flex h-[46px] w-full items-center justify-center rounded-xl text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: "var(--color-cta)" }}
                 >
                   Check in now
                 </Link>

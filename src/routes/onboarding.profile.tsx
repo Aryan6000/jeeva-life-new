@@ -49,10 +49,17 @@ function BasicProfile() {
 
   const valid = form.name.trim().length >= 2 && form.role.length > 0;
 
-  const submit = () => {
-    if (!valid) return;
-    saveProfile({ ...form, name: form.name.trim() });
-    navigate({ to: "/onboarding/assessment" });
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!valid || saving) return;
+    setSaving(true);
+    try {
+      await saveProfile({ ...form, name: form.name.trim() });
+      navigate({ to: "/onboarding/assessment" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -120,8 +127,8 @@ function BasicProfile() {
       </div>
 
       <div className="pt-6">
-        <PrimaryButton onClick={submit} disabled={!valid || !hydrated}>
-          Continue
+        <PrimaryButton onClick={submit} disabled={!valid || !hydrated || saving}>
+          {saving ? "Saving…" : "Continue"}
         </PrimaryButton>
       </div>
     </MobileShell>

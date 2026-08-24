@@ -71,3 +71,15 @@ export type JeevaState = {
   participations: Record<string, Participation>;
   consent: { aggregateInsights: boolean; identifiableSharing: boolean; research: boolean };
 };
+
+// Activity type config — used by the log-activity UI
+export const ACTIVITY_TYPES: { key: ActivityType; label: string }[] = [
+  { key: "meditation", label: "Meditation" },
+  { key: "yoga", label: "Yoga" },
+  { key: "exercise", label: "Exercise" },
+  { key: "breathing", label: "Breathing" },
+  { key: "walking", label: "Walking" },
+  { key: "sleep", label: "Sleep" },
+  { key: "journaling", label: "Journaling" },
+  { key: "other", label: "Other" },
+];

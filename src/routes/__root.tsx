@@ -11,6 +11,7 @@ import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { JeevaProvider } from "@/lib/jeeva/store";
+import { AuthProvider } from "@/lib/jeeva/auth";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -116,11 +117,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <JeevaProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster position="top-center" />
-      </JeevaProvider>
+      <AuthProvider>
+        <JeevaProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <Toaster position="top-center" />
+        </JeevaProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

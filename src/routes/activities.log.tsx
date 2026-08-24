@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppBar, MobileShell, PrimaryButton } from "@/components/jeeva/shell";
-import { ACTIVITY_TYPES } from "@/lib/jeeva/demo";
+import { ACTIVITY_TYPES } from "@/lib/jeeva/types";
 import { useJeeva } from "@/lib/jeeva/store";
 import type { ActivityType } from "@/lib/jeeva/types";
 import { cn } from "@/lib/utils";
@@ -51,17 +51,23 @@ function LogActivity() {
   const [type, setType] = useState<ActivityType | null>(null);
   const [duration, setDuration] = useState(20);
   const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const submit = () => {
-    if (!type || duration < 1) return;
-    const trimmed = note.trim();
-    logActivity(
-      trimmed
-        ? { type, durationMinutes: duration, note: trimmed }
-        : { type, durationMinutes: duration },
-    );
-    toast.success("Activity logged");
-    navigate({ to: "/home" });
+  const submit = async () => {
+    if (!type || duration < 1 || saving) return;
+    setSaving(true);
+    try {
+      const trimmed = note.trim();
+      await logActivity(
+        trimmed
+          ? { type, durationMinutes: duration, note: trimmed }
+          : { type, durationMinutes: duration },
+      );
+      toast.success("Activity logged");
+      navigate({ to: "/home" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -129,8 +135,8 @@ function LogActivity() {
       </div>
 
       <div className="pt-6">
-        <PrimaryButton onClick={submit} disabled={!type || duration < 1}>
-          Log this activity
+        <PrimaryButton onClick={submit} disabled={!type || duration < 1 || saving}>
+          {saving ? "Saving…" : "Log this activity"}
         </PrimaryButton>
       </div>
     </MobileShell>

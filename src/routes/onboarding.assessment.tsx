@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Battery, Cloud, Heart, Moon, Target } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RatingScale } from "@/components/jeeva/controls";
 import { AppBar, MobileShell, PrimaryButton } from "@/components/jeeva/shell";
 import { DIMENSIONS } from "@/lib/jeeva/scoring";
@@ -34,31 +34,44 @@ const ICONS: Record<DimensionKey, React.ReactNode> = {
 
 function BaselineAssessment() {
   const navigate = useNavigate();
-  const { state, submitBaseline } = useJeeva();
+  const { state, submitBaseline, hydrated } = useJeeva();
   const [step, setStep] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<Partial<Record<DimensionKey, number>>>(
     state.baseline?.answers ?? {},
   );
+
+  // If baseline already exists, go straight to home
+  useEffect(() => {
+    if (hydrated && state.baseline) {
+      navigate({ to: "/home" });
+    }
+  }, [hydrated, state.baseline, navigate]);
 
   const dimension = DIMENSIONS[step]!;
   const current = answers[dimension.key] ?? null;
   const isLast = step === DIMENSIONS.length - 1;
   const complete = DIMENSIONS.every((d) => answers[d.key] !== undefined);
 
-  const next = () => {
+  const next = async () => {
     if (current === null) return;
     if (!isLast) {
       setStep((s) => s + 1);
       return;
     }
-    if (!complete) return;
-    submitBaseline(answers as Record<DimensionKey, number>);
-    navigate({ to: "/profile/wellbeing" });
+    if (!complete || submitting) return;
+    setSubmitting(true);
+    try {
+      await submitBaseline(answers as Record<DimensionKey, number>);
+      navigate({ to: "/profile/wellbeing" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <MobileShell bottomNav={false}>
-      <AppBar title="Baseline Assessment" right={<span className="text-[12px] text-muted-foreground">{step + 1}/5</span>} />
+      <AppBar title="Baseline Assessment" right={<span className="text-[12px] text-muted-foreground">{step + 1}/{DIMENSIONS.length}</span>} />
 
       <div className="h-1.5 w-full rounded-full bg-primary-soft">
         <div
@@ -72,6 +85,7 @@ function BaselineAssessment() {
           {ICONS[dimension.key]}
         </span>
         <p className="mt-3 text-[13px] font-medium text-primary">{dimension.label}</p>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">Up to 25 points</p>
         <h2 className="mx-auto mt-4 max-w-[260px] text-[17px] font-semibold leading-snug">
           {dimension.question}
         </h2>
@@ -83,11 +97,16 @@ function BaselineAssessment() {
             maxLabel={dimension.maxLabel}
           />
         </div>
+        {current !== null && (
+          <p className="mt-4 text-[13px] font-semibold text-primary">
+            {dimension.reverse ? (6 - current) * 5 : current * 5} / 25 points
+          </p>
+        )}
       </div>
 
       <div className="pt-6">
-        <PrimaryButton onClick={next} disabled={current === null}>
-          {isLast ? "See my wellbeing profile" : "Next question"}
+        <PrimaryButton onClick={next} disabled={current === null || submitting}>
+          {submitting ? "Saving…" : isLast ? "See my wellbeing score" : "Next question"}
         </PrimaryButton>
         {step > 0 ? (
           <button

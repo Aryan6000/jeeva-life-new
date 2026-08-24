@@ -1,0 +1,140 @@
+rules_version = '2';
+
+// ─── JeevaLife Firestore Security Rules ──────────────────────────────────────
+//
+// Security model:
+//   - A "participant" can only read and write their OWN data.
+//   - An "admin" has read access to aggregate collections and user profiles
+//     (but NEVER raw assessment answers — those rules are enforced by the app
+//     layer; here we allow admin reads of assessments for aggregate computation).
+//   - Admin role is determined ONLY by a Firebase custom claim (admin === true).
+//     No client-supplied role is ever trusted.
+//   - metricSnapshots and sessions are read-only for all authenticated users
+//     (written only via Admin SDK / server scripts).
+//   - activities are immutable after creation: no updates or deletes allowed
+//     from the client.
+//   - The baseline assessment (assessments/{uid}) is immutable after creation.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ─────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isOwnerOrAdmin(uid) {
+      return isOwner(uid) || isAdmin();
+    }
+
+    // ── users/{uid} ───────────────────────────────────────────────────────────
+    // Users can read/write only their own document.
+    // Admins can read all user documents (for participant roster).
+    // No client can set the 'role' field (it's set server-side via custom claims).
+
+    match /users/{uid} {
+      allow read: if isOwnerOrAdmin(uid);
+
+      // Allow create only for the user themselves (first login)
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.role == "participant"; // prevent self-promotion
+
+      // Allow updates to allowed fields only — never role
+      allow update: if isOwner(uid)
+        && !("role" in request.resource.data.diff(resource.data).affectedKeys());
+
+      allow delete: if false; // users are never deleted via client
+
+      // ── users/{uid}/checkIns/{dateKey} ──────────────────────────────────
+      match /checkIns/{dateKey} {
+        allow read: if isOwnerOrAdmin(uid);
+        allow create, update: if isOwner(uid);
+        allow delete: if false; // check-ins are immutable log entries
+      }
+
+      // ── users/{uid}/activities/{activityId} ─────────────────────────────
+      match /activities/{activityId} {
+        allow read: if isOwnerOrAdmin(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.durationMinutes >= 1; // validation
+        allow update: if false; // activities are immutable after creation
+        allow delete: if false;
+      }
+
+      // ── users/{uid}/participations/{programmeId} ─────────────────────────
+      match /participations/{programmeId} {
+        allow read: if isOwnerOrAdmin(uid);
+        allow create, update: if isOwner(uid);
+        allow delete: if false;
+      }
+    }
+
+    // ── assessments/{uid} (baseline — one per user, immutable) ───────────────
+    match /assessments/{uid} {
+      // Owner can read their own baseline; admin can read all for aggregation
+      allow read: if isOwnerOrAdmin(uid);
+
+      // Create only — never update or delete (immutable baseline)
+      allow create: if isOwner(uid)
+        && !exists(/databases/$(database)/documents/assessments/$(uid));
+
+      allow update: if false; // baseline is immutable
+      allow delete: if false;
+    }
+
+    // ── programmes/{programmeId} ──────────────────────────────────────────────
+    match /programmes/{programmeId} {
+      allow read: if isSignedIn(); // any authenticated user can read programmes
+      allow write: if isAdmin();   // only admins can create/update programmes
+    }
+
+    // ── organisations/{orgId} ────────────────────────────────────────────────
+    match /organisations/{orgId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── sessions/{sessionId} ─────────────────────────────────────────────────
+    match /sessions/{sessionId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin(); // attendance management via admin portal only
+    }
+
+    // ── attendance/{attendanceId} ─────────────────────────────────────────────
+    // Written by admin only; participants cannot mark themselves present.
+    match /attendance/{attendanceId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── metricSnapshots/{snapshotId} ─────────────────────────────────────────
+    // Written only by server-side scripts via Admin SDK.
+    // Readable by admins for aggregate reporting.
+    match /metricSnapshots/{snapshotId} {
+      allow read: if isAdmin();
+      allow write: if false; // Admin SDK only — never from client
+    }
+
+    // ── notifications/{notificationId} ───────────────────────────────────────
+    match /notifications/{notificationId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
