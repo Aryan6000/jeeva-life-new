@@ -1,5 +1,31 @@
 import type { Assessment, DimensionKey } from "./types";
 
+/**
+ * Scoring model:
+ *
+ *   4 dimensions, each rated 1–5 by the user.
+ *   Dimension score  = rating × 5  →  range 5–25  (max 25 per question)
+ *   Stress is reversed: score = (6 − rating) × 5
+ *
+ *   Overall score = sum of all 4 dimension scores
+ *                 = max 4 × 25 = 100
+ *
+ *   Example — user answers all 5:
+ *     Stress    5 → reversed → (6-5)×5 =  5  ← high stress = low score
+ *     Focus     5 →            5×5     = 25
+ *     Energy    5 →            5×5     = 25
+ *     Sleep     5 →            5×5     = 25
+ *                              total  = 80 / 100
+ *
+ *   Example — perfect wellbeing (stress=1, rest=5):
+ *     Stress    1 → (6-1)×5 = 25
+ *     Focus     5 →  5×5    = 25
+ *     Energy    5 →  5×5    = 25
+ *     Sleep     5 →  5×5    = 25
+ *                    total  = 100 / 100
+ */
+
+// Only 4 dimensions are used for scoring (emotional removed to keep total = 100)
 export const DIMENSIONS: {
   key: DimensionKey;
   label: string;
@@ -40,14 +66,6 @@ export const DIMENSIONS: {
     minLabel: "Not rested",
     maxLabel: "Fully rested",
   },
-  {
-    key: "emotional",
-    label: "Emotional wellbeing",
-    question: "How balanced and positive did you feel overall?",
-    reverse: false,
-    minLabel: "Not at all",
-    maxLabel: "Very balanced",
-  },
 ];
 
 export const DIMENSION_LABELS: Record<DimensionKey, string> = {
@@ -58,22 +76,30 @@ export const DIMENSION_LABELS: Record<DimensionKey, string> = {
   emotional: "Emotional wellbeing",
 };
 
-/** V1 rule: positive dimensions rating x 20, stress balance (6 - rating) x 20. */
+/**
+ * Each dimension: rating × 5 = score out of 25.
+ * Stress is reversed.
+ * emotional is not part of baseline scoring but kept for check-in mood.
+ */
 export function scoreDimensions(
   answers: Record<DimensionKey, number>,
 ): Record<DimensionKey, number> {
   return {
-    stress: (6 - answers.stress) * 20,
-    focus: answers.focus * 20,
-    energy: answers.energy * 20,
-    sleep: answers.sleep * 20,
-    emotional: answers.emotional * 20,
+    stress:    (6 - answers.stress) * 5,   // reversed
+    focus:     answers.focus   * 5,
+    energy:    answers.energy  * 5,
+    sleep:     answers.sleep   * 5,
+    emotional: answers.emotional * 5,      // kept for completeness / check-in
   };
 }
 
+/**
+ * Overall score = sum of the 4 baseline dimensions (stress, focus, energy, sleep).
+ * Max = 4 × 25 = 100.
+ */
 export function overallScore(dimensions: Record<DimensionKey, number>): number {
-  const values = Object.values(dimensions);
-  return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+  const { stress, focus, energy, sleep } = dimensions;
+  return Math.min(100, Math.round(stress + focus + energy + sleep));
 }
 
 export function buildAssessment(answers: Record<DimensionKey, number>): Assessment {
@@ -94,7 +120,7 @@ export function scoreBand(score: number): string {
   return "Needs care";
 }
 
-/** Single application-timezone dateKey helper (Asia/Kolkata for the Tezpur programme). */
+/** dateKey in Asia/Kolkata timezone (YYYY-MM-DD). */
 export function dateKey(date: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",

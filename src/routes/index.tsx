@@ -59,7 +59,8 @@ function Welcome() {
         <div className="mt-auto pt-8">
           <Link
             to="/auth"
-            className="flex h-[50px] w-full items-center justify-center rounded-xl bg-primary text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-primary-dark"
+            className="flex h-[50px] w-full items-center justify-center rounded-xl text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "var(--color-primary)" }}
           >
             Get started
           </Link>

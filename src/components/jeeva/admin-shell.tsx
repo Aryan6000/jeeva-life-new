@@ -8,7 +8,6 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { SyntheticBadge } from "./shell";
 
 const ADMIN_NAV = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -21,16 +20,13 @@ const ADMIN_NAV = [
 export function AdminShell({
   title,
   children,
-  synthetic = true,
 }: {
   title: string;
   children: ReactNode;
-  synthetic?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-surface">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col lg:flex-row">
-        {/* Sidebar at >=1024px, compact top nav below 900px */}
         <aside className="border-b border-border bg-background px-4 py-3 lg:min-h-screen lg:w-[230px] lg:shrink-0 lg:border-b-0 lg:border-r lg:px-4 lg:py-5">
           <Link to="/" className="flex items-center gap-2">
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary-soft text-[15px] font-semibold text-primary">
@@ -62,7 +58,6 @@ export function AdminShell({
           <header className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-[20px] font-semibold tracking-tight">{title}</h1>
             <div className="flex items-center gap-3">
-              {synthetic ? <SyntheticBadge /> : null}
               <span className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[12px] font-medium">
                 <Users className="size-3.5 text-muted-foreground" strokeWidth={1.8} />
                 Admin
@@ -79,8 +74,7 @@ export function AdminShell({
           <div className="mt-5">{children}</div>
 
           <p className="pt-6 text-[11px] text-muted-foreground">
-            All reports show aggregated, de-identified data. Historical retention values in this
-            build are seeded synthetic snapshots.
+            All reports show aggregated, de-identified data.
           </p>
         </main>
       </div>

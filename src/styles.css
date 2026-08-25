@@ -36,6 +36,8 @@
   --color-mint-foreground: var(--mint-foreground);
   --color-peach: var(--peach);
   --color-peach-foreground: var(--peach-foreground);
+  --color-cta: var(--cta);
+  --color-cta-foreground: var(--cta-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -65,55 +67,64 @@
 :root {
   --radius: 1.125rem; /* 18px default card radius */
 
-  --background: #FCFAFA;
-  --foreground: #102A26;
-  --surface: #FCFAFA;
+  /* Warm off-white background */
+  --background: oklch(0.98 0.004 100);
+  --foreground: oklch(0.15 0.01 150);
+  --surface: oklch(0.965 0.006 100);
 
-  --card: #FFFFFF;
-  --card-foreground: #102A26;
-  --popover: #FFFFFF;
-  --popover-foreground: #102A26;
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.01 150);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 150);
 
-  --primary: #124B43;
-  --primary-foreground: #FFFFFF;
-  --primary-dark: #0E3E37;
-  --primary-soft: #EEF4EB;
+  /* Dark forest green — primary */
+  --primary: oklch(0.32 0.09 155);
+  --primary-foreground: oklch(1 0 0);
+  --primary-dark: oklch(0.24 0.07 155);
+  --primary-soft: oklch(0.93 0.03 145);
 
-  --secondary: #FFFFFF;
-  --secondary-foreground: #102A26;
+  --secondary: oklch(0.965 0.006 100);
+  --secondary-foreground: oklch(0.15 0.01 150);
 
-  --muted: #F2F0E9;
-  --muted-foreground: #60726F;
+  --muted: oklch(0.965 0.006 100);
+  --muted-foreground: oklch(0.52 0.025 150);
 
-  --accent: #EEF4EB;
-  --accent-foreground: #124B43;
+  --accent: oklch(0.93 0.03 145);
+  --accent-foreground: oklch(0.24 0.07 155);
 
-  --mint: #D4E1CB;
-  --mint-foreground: #124B43;
-  --peach: #FFF2EC;
-  --peach-foreground: #EF755C;
+  /* Soft sage green — mint */
+  --mint: oklch(0.93 0.03 145);
+  --mint-foreground: oklch(0.32 0.09 155);
 
-  --destructive: #EF755C;
-  --destructive-foreground: #FFFFFF;
+  /* Warm coral/salmon — peach (used for CTA buttons like "Check in now") */
+  --peach: oklch(0.94 0.04 50);
+  --peach-foreground: oklch(0.58 0.16 42);
 
-  --border: #EAE6DF;
-  --input: #EAE6DF;
-  --ring: #124B43;
+  /* Coral CTA color */
+  --cta: oklch(0.65 0.15 42);
+  --cta-foreground: oklch(1 0 0);
 
-  --chart-1: #124B43;
-  --chart-2: #D4E1CB;
-  --chart-3: #EF755C;
-  --chart-4: #F8D8CC;
-  --chart-5: #0E3E37;
+  --destructive: oklch(0.6 0.21 20);
+  --destructive-foreground: oklch(1 0 0);
 
-  --sidebar: #FCFAFA;
-  --sidebar-foreground: #102A26;
-  --sidebar-primary: #124B43;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EEF4EB;
-  --sidebar-accent-foreground: #124B43;
-  --sidebar-border: #EAE6DF;
-  --sidebar-ring: #124B43;
+  --border: oklch(0.90 0.01 120);
+  --input: oklch(0.90 0.01 120);
+  --ring: oklch(0.32 0.09 155);
+
+  --chart-1: oklch(0.32 0.09 155);
+  --chart-2: oklch(0.58 0.16 42);
+  --chart-3: oklch(0.66 0.17 48);
+  --chart-4: oklch(0.62 0.13 230);
+  --chart-5: oklch(0.24 0.07 155);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.15 0.01 150);
+  --sidebar-primary: oklch(0.32 0.09 155);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.03 145);
+  --sidebar-accent-foreground: oklch(0.24 0.07 155);
+  --sidebar-border: oklch(0.90 0.01 120);
+  --sidebar-ring: oklch(0.32 0.09 155);
 }
 
 @layer base {

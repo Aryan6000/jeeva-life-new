@@ -1,24 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Calendar, MapPin, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Calendar, Loader2, MapPin, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AppBar, MobileShell, PrimaryButton } from "@/components/jeeva/shell";
-import { TEZPUR_PROGRAMME, UPCOMING_PROGRAMMES } from "@/lib/jeeva/demo";
 import { useJeeva } from "@/lib/jeeva/store";
+import { getProgrammeById } from "@/lib/jeeva/firestore";
+import type { Programme } from "@/lib/jeeva/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/programs/$id")({
   head: () => ({
     meta: [
       { title: "Programme participation — JeevaLife" },
-      {
-        name: "description",
-        content: "Review programme dates and venue, then record whether you are participating. Your response stays private.",
-      },
+      { name: "description", content: "Review programme details and record your participation." },
       { property: "og:title", content: "Programme participation — JeevaLife" },
-      { property: "og:description", content: "Join a JeevaLife programme and record your participation." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProgrammeParticipation,
@@ -29,99 +25,116 @@ function ProgrammeParticipation() {
   const navigate = useNavigate();
   const { state, setParticipation } = useJeeva();
 
-  const programme =
-    id === TEZPUR_PROGRAMME.id
-      ? TEZPUR_PROGRAMME
-      : (UPCOMING_PROGRAMMES.find((p) => p.id === id) ?? TEZPUR_PROGRAMME);
-
-  const existing = state.participations[programme.id];
+  const [programme, setProgramme] = useState<Programme | null>(null);
+  const [loading, setLoading] = useState(true);
   const [choice, setChoice] = useState<"joined" | "declined" | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (existing) setChoice(existing.status);
-  }, [existing]);
+    getProgrammeById(id)
+      .then(setProgramme)
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  const submit = () => {
-    if (!choice) return;
-    setParticipation(programme.id, choice);
-    toast.success(choice === "joined" ? "Participation saved" : "Response saved");
-    navigate({ to: "/programs" });
+  useEffect(() => {
+    if (programme) {
+      const existing = state.participations[programme.id];
+      if (existing) setChoice(existing.status);
+    }
+  }, [programme, state.participations]);
+
+  const submit = async () => {
+    if (!choice || saving || !programme) return;
+    setSaving(true);
+    try {
+      await setParticipation(programme.id, choice);
+      toast.success(choice === "joined" ? "Participation saved" : "Response saved");
+      navigate({ to: "/programs" });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <MobileShell bottomNav={false}>
+        <AppBar title="Programme Participation" />
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
+      </MobileShell>
+    );
+  }
+
+  if (!programme) {
+    return (
+      <MobileShell bottomNav={false}>
+        <AppBar title="Programme Participation" />
+        <p className="py-16 text-center text-[13px] text-muted-foreground">Programme not found.</p>
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell bottomNav={false}>
       <AppBar title="Programme Participation" />
 
-      <div className="px-1 py-4">
-        <div className="rounded-[24px] border border-[#EAE6DF]/80 bg-[#FAF7F2] p-5">
-          <div className="flex items-start gap-4">
-            <span className="flex size-[44px] shrink-0 items-center justify-center rounded-[14px] border border-[#EAE6DF] bg-white text-[#112A27]">
-              <Calendar className="size-6" strokeWidth={1.5} />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-[17px] font-semibold leading-[1.3] text-[#112A27]">
-                {programme.name}
-              </h2>
-              <p className="mt-1.5 text-[15px] text-[#60726F]">{programme.organisation}</p>
-            </div>
-          </div>
-          <div className="mt-6 space-y-3 text-[14px] text-[#60726F] font-medium">
-            <p className="flex items-center gap-3">
-              <Calendar className="size-5 text-[#112A27]" strokeWidth={1.5} />
-              {programme.dates}
-            </p>
-            <p className="flex items-center gap-3">
-              <MapPin className="size-5 text-[#112A27]" strokeWidth={1.5} />
-              {programme.venue}
-            </p>
+      <div className="jl-card bg-primary-soft/60 p-4">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-background text-primary">
+            <Calendar className="size-5" strokeWidth={1.7} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-[15px] font-semibold leading-snug text-primary-dark">{programme.name}</h2>
+            <p className="mt-1 text-[12px] text-muted-foreground">{programme.organisation}</p>
           </div>
         </div>
-
-        <h3 className="pb-4 pt-8 text-[17px] font-bold text-[#112A27]">Will you be participating?</h3>
-        <div className="space-y-3">
-          {(
-            [
-              { key: "joined", label: "Yes, I'm joining" },
-              { key: "declined", label: "No, not this time" },
-            ] as const
-          ).map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              aria-pressed={choice === option.key}
-              onClick={() => setChoice(option.key)}
-              className={cn(
-                "flex h-[60px] w-full items-center gap-4 rounded-[16px] border px-5 text-[15px] transition-colors",
-                choice === option.key
-                  ? "border-[#124B43]/30 bg-[#EEF4EB] font-medium text-[#112A27]"
-                  : "border-[#EAE6DF] bg-white text-[#112A27] hover:bg-gray-50",
-              )}
-            >
-              <span
-                className={cn(
-                  "flex size-[22px] items-center justify-center rounded-full border-[1.5px]",
-                  choice === option.key ? "border-[#124B43]" : "border-[#C4CCCB]",
-                )}
-              >
-                {choice === option.key ? <span className="size-3 rounded-full bg-[#124B43]" /> : null}
-              </span>
-              {option.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-6 flex items-start gap-3 rounded-[16px] bg-[#EEF4EB] p-4 border border-[#124B43]/10">
-          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#124B43]" strokeWidth={1.5} />
-          <p className="text-[13px] text-[#124B43] font-medium leading-snug pr-4">
-            Your response is private and used only for programme planning and reporting.
+        <div className="mt-4 space-y-1.5 text-[12px] text-muted-foreground">
+          <p className="flex items-center gap-2">
+            <Calendar className="size-3.5" strokeWidth={1.8} />
+            {programme.dates}
+          </p>
+          <p className="flex items-center gap-2">
+            <MapPin className="size-3.5" strokeWidth={1.8} />
+            {programme.venue}
           </p>
         </div>
+      </div>
 
-        <div className="pt-8 pb-10">
-          <PrimaryButton onClick={submit} disabled={!choice} className="h-[52px] rounded-[16px] text-[16px] bg-[#124B43] hover:bg-[#0E3E37]">
-            Save participation
-          </PrimaryButton>
-        </div>
+      <h3 className="pb-2 pt-6 text-[13px] font-semibold">Will you be participating?</h3>
+      <div className="space-y-2.5">
+        {([{ key: "joined", label: "Yes, I'm joining" }, { key: "declined", label: "No, not this time" }] as const).map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            aria-pressed={choice === option.key}
+            onClick={() => setChoice(option.key)}
+            className={cn(
+              "flex h-[52px] w-full items-center gap-3 rounded-xl border px-4 text-[14px] transition-colors",
+              choice === option.key
+                ? "border-primary bg-primary-soft font-medium text-primary-dark"
+                : "border-border bg-surface text-foreground hover:bg-muted",
+            )}
+          >
+            <span className={cn("flex size-4.5 items-center justify-center rounded-full border", choice === option.key ? "border-primary" : "border-border")}>
+              {choice === option.key && <span className="size-2.5 rounded-full bg-primary" />}
+            </span>
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="jl-card mt-4 flex items-start gap-3 bg-mint p-3.5">
+        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-mint-foreground" strokeWidth={1.9} />
+        <p className="text-[12px] text-mint-foreground">
+          Your response is private and used only for programme planning and reporting.
+        </p>
+      </div>
+
+      <div className="pt-6">
+        <PrimaryButton onClick={submit} disabled={!choice || saving}>
+          {saving ? "Saving…" : "Save participation"}
+        </PrimaryButton>
       </div>
     </MobileShell>
   );

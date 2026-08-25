@@ -38,26 +38,22 @@ const NAV = [
 
 export function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 bg-[#FCFAFA] pt-2 border-t border-[#EAE6DF]/50">
-      <div className="mx-auto flex w-full max-w-[620px] items-stretch justify-around px-2 pb-2">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-[620px] items-center justify-between px-2 pb-2 pt-1">
         {NAV.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
-            className="jl-tap relative flex flex-1 flex-col items-center justify-center gap-1.5 rounded-md py-1 text-[12px] font-medium text-[#60726F] transition-colors [&.active]:text-[#112A27]"
-            activeProps={{ className: "active" }}
-          >
-            {({ isActive }) => (
-              <>
-                <div className="relative flex flex-col items-center">
-                  <Icon className="size-[22px]" strokeWidth={isActive ? 2.5 : 1.5} />
-                  {isActive && (
-                    <span className="absolute -bottom-3 h-[2px] w-6 rounded-full bg-[#112A27]" />
-                  )}
-                </div>
-                <span className={isActive ? "mt-1 font-semibold" : "mt-1 font-medium"}>{label}</span>
-              </>
+            activeProps={{ "data-active": "true" }}
+            className={cn(
+              "group flex flex-1 flex-col items-center gap-0.5 py-1 text-[10px] font-medium text-muted-foreground transition-colors",
+              "data-[active=true]:text-primary",
             )}
+          >
+            <span className="flex size-8 items-center justify-center rounded-xl transition-colors group-data-[active=true]:bg-primary-soft">
+              <Icon className="size-[18px] transition-all group-data-[active=true]:stroke-[2.4]" strokeWidth={1.7} />
+            </span>
+            <span className="transition-all group-data-[active=true]:font-semibold">{label}</span>
           </Link>
         ))}
       </div>
@@ -118,10 +114,11 @@ export function PrimaryButton({
     <button
       {...props}
       className={cn(
-        "h-[50px] w-full rounded-xl bg-primary px-4 text-[15px] font-semibold text-primary-foreground transition-colors",
-        "hover:bg-primary-dark active:bg-primary-dark disabled:opacity-45",
+        "h-[50px] w-full rounded-xl px-4 text-[15px] font-semibold text-white transition-opacity",
+        "hover:opacity-90 active:opacity-80 disabled:opacity-45",
         className,
       )}
+      style={{ backgroundColor: "var(--color-cta)", ...(props.style ?? {}) }}
     >
       {children}
     </button>
@@ -130,19 +127,6 @@ export function PrimaryButton({
 
 export function StickyAction({ children }: { children: ReactNode }) {
   return <div className="pt-2">{children}</div>;
-}
-
-export function SyntheticBadge({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full bg-peach px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-peach-foreground",
-        className,
-      )}
-    >
-      Synthetic demo data
-    </span>
-  );
 }
 
 export function Disclaimer({ children }: { children: ReactNode }) {

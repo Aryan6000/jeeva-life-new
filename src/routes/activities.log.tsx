@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppBar, MobileShell, PrimaryButton } from "@/components/jeeva/shell";
-import { ACTIVITY_TYPES } from "@/lib/jeeva/demo";
+import { ACTIVITY_TYPES } from "@/lib/jeeva/types";
 import { useJeeva } from "@/lib/jeeva/store";
 import type { ActivityType } from "@/lib/jeeva/types";
 import { cn } from "@/lib/utils";
@@ -51,89 +51,93 @@ function LogActivity() {
   const [type, setType] = useState<ActivityType | null>(null);
   const [duration, setDuration] = useState(20);
   const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const submit = () => {
-    if (!type || duration < 1) return;
-    const trimmed = note.trim();
-    logActivity(
-      trimmed
-        ? { type, durationMinutes: duration, note: trimmed }
-        : { type, durationMinutes: duration },
-    );
-    toast.success("Activity logged");
-    navigate({ to: "/home" });
+  const submit = async () => {
+    if (!type || duration < 1 || saving) return;
+    setSaving(true);
+    try {
+      const trimmed = note.trim();
+      await logActivity(
+        trimmed
+          ? { type, durationMinutes: duration, note: trimmed }
+          : { type, durationMinutes: duration },
+      );
+      toast.success("Activity logged");
+      navigate({ to: "/home" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <MobileShell bottomNav={false}>
       <AppBar title="Log Activity" />
 
-      <div className="px-1 py-4">
-        <div className="rounded-[24px] border border-[#EAE6DF]/50 bg-white p-5 shadow-sm">
-          <h2 className="text-[16px] font-bold text-[#112A27]">What did you do?</h2>
+      <div className="jl-card p-4">
+        <p className="text-[14px] font-medium">What did you do?</p>
 
-          <div className="mt-5 grid grid-cols-3 gap-4">
-            {ACTIVITY_TYPES.map((a) => (
-              <button
-                key={a.key}
-                type="button"
-                aria-pressed={type === a.key}
-                onClick={() => setType(a.key)}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-2 rounded-[20px] p-4 text-[13px] font-medium transition-all",
-                  type === a.key
-                    ? "bg-[#D4E1CB] text-[#124B43] shadow-sm"
-                    : "bg-[#F4F6F4] text-[#112A27] hover:bg-[#EBEFEB]",
-                )}
-              >
-                <span className="text-[#124B43]">
-                  {ICONS[a.key]}
-                </span>
-                {a.label}
-              </button>
-            ))}
-          </div>
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {ACTIVITY_TYPES.map((a) => (
+            <button
+              key={a.key}
+              type="button"
+              aria-pressed={type === a.key}
+              onClick={() => setType(a.key)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-[11px] font-medium transition-colors",
+                type === a.key
+                  ? "border-primary bg-primary-soft text-primary-dark"
+                  : "border-border bg-background text-foreground hover:bg-muted",
+              )}
+            >
+              <span className={cn(type === a.key ? "text-primary" : "text-primary/80")}>
+                {ICONS[a.key]}
+              </span>
+              {a.label}
+            </button>
+          ))}
+        </div>
 
-          <div className="mt-8">
-            <p className="text-[14px] text-[#112A27] font-medium">Duration</p>
-            <div className="mt-2 flex h-[56px] items-center justify-between rounded-[20px] bg-[#FFF2EC] px-3">
-              <button
-                type="button"
-                aria-label="Decrease duration"
-                onClick={() => setDuration((d) => Math.max(1, d - 5))}
-                className="flex size-[40px] items-center justify-center rounded-full bg-white text-[24px] font-medium text-[#112A27] shadow-sm transition-transform active:scale-95"
-              >
-                −
-              </button>
-              <span className="text-[18px] font-semibold text-[#112A27]">{duration} min</span>
-              <button
-                type="button"
-                aria-label="Increase duration"
-                onClick={() => setDuration((d) => Math.min(600, d + 5))}
-                className="flex size-[40px] items-center justify-center rounded-full bg-white text-[24px] font-medium text-[#112A27] shadow-sm transition-transform active:scale-95"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <p className="text-[14px] text-[#112A27] font-medium">Note (optional)</p>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={3}
-              placeholder="How did it feel?"
-              className="mt-2 w-full resize-none rounded-[16px] border border-[#EAE6DF] bg-white p-4 text-[15px] outline-none transition-colors placeholder:text-[#60726F] focus:border-[#124B43]"
-            />
+        <div className="mt-5">
+          <p className="text-[12px] font-medium text-muted-foreground">Duration</p>
+          <div className="jl-field mt-2 flex items-center justify-between p-2">
+            <button
+              type="button"
+              aria-label="Decrease duration"
+              onClick={() => setDuration((d) => Math.max(1, d - 5))}
+              className="jl-tap flex items-center justify-center rounded-full text-[18px] text-muted-foreground hover:bg-muted"
+            >
+              −
+            </button>
+            <span className="text-[15px] font-semibold">{duration} min</span>
+            <button
+              type="button"
+              aria-label="Increase duration"
+              onClick={() => setDuration((d) => Math.min(600, d + 5))}
+              className="jl-tap flex items-center justify-center rounded-full text-[18px] text-muted-foreground hover:bg-muted"
+            >
+              +
+            </button>
           </div>
         </div>
 
-        <div className="pt-8 pb-10">
-          <PrimaryButton onClick={submit} disabled={!type || duration < 1} className="h-[52px] rounded-[16px] text-[16px] bg-[#EF755C] hover:bg-[#d9654b]">
-            Log this activity
-          </PrimaryButton>
+        <div className="mt-4">
+          <p className="text-[12px] font-medium text-muted-foreground">Note (optional)</p>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            placeholder="How did it feel?"
+            className="jl-field mt-2 w-full resize-none p-3 text-[14px] outline-none placeholder:text-muted-foreground"
+          />
         </div>
+      </div>
+
+      <div className="pt-6">
+        <PrimaryButton onClick={submit} disabled={!type || duration < 1 || saving}>
+          {saving ? "Saving…" : "Log this activity"}
+        </PrimaryButton>
       </div>
     </MobileShell>
   );
