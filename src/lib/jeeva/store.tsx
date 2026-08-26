@@ -62,7 +62,10 @@ type JeevaContextValue = {
   loading: boolean;
   onboardingStatus: OnboardingStatus;
   todayCheckIn: CheckIn | null;
+  /** How many of the last 7 days had a check-in (0–7). */
   consistencyDays: number;
+  /** Consecutive daily check-in streak. Resets if a day is missed. */
+  streak: number;
   saveProfile: (profile: Profile) => Promise<void>;
   submitBaseline: (answers: Record<DimensionKey, number>) => Promise<Assessment>;
   saveCheckIn: (input: Omit<CheckIn, "dateKey" | "createdAt">) => Promise<void>;
@@ -240,11 +243,26 @@ export function JeevaProvider({ children }: { children: ReactNode }) {
     const today = dateKey();
     const todayCheckIn = state.checkIns[today] ?? null;
 
-    const active = new Set([
-      ...Object.keys(state.checkIns),
-      ...state.activities.map((a) => a.dateKey),
-    ]);
-    const consistencyDays = lastNDateKeys(7).filter((k) => active.has(k)).length;
+    // consistencyDays = how many of last 7 days had a check-in (for the ring display)
+    const checkInDays = new Set(Object.keys(state.checkIns));
+    const consistencyDays = lastNDateKeys(7).filter((k) => checkInDays.has(k)).length;
+
+    // streak = consecutive days (ending today or yesterday) with a check-in
+    // If today is missed, streak is still alive until midnight
+    // If yesterday AND today both missed → streak resets
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = dateKey(d);
+      if (checkInDays.has(k)) {
+        streak++;
+      } else {
+        // Allow one gap only for today (user hasn't checked in yet today)
+        if (i === 0) continue;
+        break; // any other missed day breaks the streak
+      }
+    }
 
     const onboardingStatus: OnboardingStatus = !state.profile
       ? "profile"
@@ -259,6 +277,7 @@ export function JeevaProvider({ children }: { children: ReactNode }) {
       onboardingStatus,
       todayCheckIn,
       consistencyDays,
+      streak,
       saveProfile,
       submitBaseline,
       saveCheckIn,

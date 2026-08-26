@@ -1,19 +1,6 @@
 rules_version = '2';
 
-// ─── JeevaLife Firestore Security Rules ──────────────────────────────────────
-//
-// Security model:
-//   - A "participant" can only read and write their OWN data.
-//   - An "admin" has read access to aggregate collections and user profiles
-//     (but NEVER raw assessment answers — those rules are enforced by the app
-//     layer; here we allow admin reads of assessments for aggregate computation).
-//   - Admin role is determined ONLY by a Firebase custom claim (admin === true).
-//     No client-supplied role is ever trusted.
-//   - metricSnapshots and sessions are read-only for all authenticated users
-//     (written only via Admin SDK / server scripts).
-//   - activities are immutable after creation: no updates or deletes allowed
-//     from the client.
-//   - The baseline assessment (assessments/{uid}) is immutable after creation.
+
 
 service cloud.firestore {
   match /databases/{database}/documents {
