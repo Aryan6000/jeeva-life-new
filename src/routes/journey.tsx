@@ -43,29 +43,32 @@ function Journey() {
   const current = todayCheckIn ? checkInScore(todayCheckIn) : baseline;
   const change = baseline !== null && current !== null ? current - baseline : null;
 
-  // Build trend from real check-ins
+  // Build trend — one point per day that has a check-in, gaps on missed days
+  // All days in range are included (null score = gap in line)
   const trend = useMemo(() => {
     const days = parseInt(range);
-    const points: { label: string; score: number }[] = [];
-    const buckets = Math.ceil(days / 7);
-    for (let i = buckets - 1; i >= 0; i--) {
-      const bucketEnd = subDays(new Date(), i * 7);
-      const scores: number[] = [];
-      for (let d = 0; d <= 6; d++) {
-        const k = dateKey(subDays(bucketEnd, d));
-        const ci = state.checkIns[k];
-        if (ci) scores.push(checkInScore(ci));
-      }
-      if (scores.length > 0) {
-        const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-        points.push({ label: format(subDays(bucketEnd, 6), "MMM d"), score: avg });
-      }
+    const points: { label: string; date: string; score: number | null }[] = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = subDays(new Date(), i);
+      const k = dateKey(d);
+      const ci = state.checkIns[k];
+
+      // Format label: show date for first of month or every ~7th point
+      const isFirst = i === days - 1;
+      const isLast = i === 0;
+      const showLabel = isFirst || isLast || (i % Math.ceil(days / 6)) === 0;
+      const label = showLabel ? format(d, "MMM d") : "";
+
+      points.push({
+        label,
+        date: k,
+        score: ci ? checkInScore(ci) : null,
+      });
     }
-    if (points.length === 0 && baseline !== null) {
-      points.push({ label: "Baseline", score: baseline });
-    }
+
     return points;
-  }, [range, state.checkIns, baseline]);
+  }, [range, state.checkIns]);
 
   // Consistency calculations
   const last7ActivityDays = useMemo(() => {
@@ -156,7 +159,7 @@ function Journey() {
       {/* Trend chart */}
       <div className="jl-card mt-4 p-4">
         <p className="text-[14px] font-semibold">Wellbeing score trend</p>
-        {trend.length === 0 || (trend.length === 1 && trend[0]?.label === "Baseline") ? (
+        {trend.every(p => p.score === null) ? (
           <p className="mt-4 py-8 text-center text-[12px] text-muted-foreground">
             No check-in data yet. Start checking in to see your trend.
           </p>
@@ -170,7 +173,7 @@ function Journey() {
                   tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
                   tickLine={false}
                   axisLine={false}
-                  interval="preserveStartEnd"
+                  interval={0}
                 />
                 <YAxis
                   domain={[0, 100]}
@@ -186,14 +189,31 @@ function Journey() {
                     fontSize: 12,
                     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                   }}
+                  formatter={(value: number) => [`${value}/100`, "Score"]}
+                  labelFormatter={(label: string) => label || ""}
                 />
                 <Line
                   type="monotone"
                   dataKey="score"
                   stroke="var(--color-primary)"
                   strokeWidth={2.5}
-                  dot={{ r: 3.5, fill: "var(--color-primary)", strokeWidth: 0 }}
+                  dot={(props) => {
+                    const { cx, cy, payload } = props as { cx: number; cy: number; payload: { score: number | null } };
+                    if (payload.score === null) return <g key={`dot-${cx}`} />;
+                    return (
+                      <circle
+                        key={`dot-${cx}`}
+                        cx={cx}
+                        cy={cy}
+                        r={4}
+                        fill="var(--color-primary)"
+                        stroke="white"
+                        strokeWidth={1.5}
+                      />
+                    );
+                  }}
                   activeDot={{ r: 5, fill: "var(--color-primary)" }}
+                  connectNulls={true}
                 />
               </LineChart>
             </ResponsiveContainer>

@@ -22,7 +22,7 @@ export const Route = createFileRoute("/home")({
 });
 
 function HomeScreen() {
-  const { state, hydrated, todayCheckIn, consistencyDays } = useJeeva();
+  const { state, hydrated, todayCheckIn, consistencyDays, streak } = useJeeva();
   const firstName = state.profile?.name?.split(" ")[0] ?? "there";
   const baselineScore = state.baseline?.score ?? null;
 
@@ -108,14 +108,21 @@ function HomeScreen() {
             <Card className="flex flex-col justify-between">
               <div>
                 <p className="text-[12px] font-medium">Consistency</p>
-                <p className="text-[11px] text-muted-foreground">This week</p>
+                <p className="text-[11px] text-muted-foreground">Daily streak</p>
               </div>
               <div className="mt-3 flex items-end justify-between">
                 <span className="text-[18px] font-semibold">
-                  {consistencyDays}/7 <span className="text-[12px] font-normal text-muted-foreground">days</span>
+                  {streak} <span className="text-[12px] font-normal text-muted-foreground">
+                    {streak === 1 ? "day" : "days"}
+                  </span>
                 </span>
-                <ConsistencyRing days={consistencyDays} />
+                <ConsistencyRing days={consistencyDays} streak={streak} />
               </div>
+              {streak > 0 && (
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {todayCheckIn ? `🔥 ${streak} day streak!` : `Check in to keep your ${streak}d streak`}
+                </p>
+              )}
             </Card>
 
             <Card className="flex flex-col justify-between">
@@ -162,10 +169,14 @@ function HomeScreen() {
   );
 }
 
-function ConsistencyRing({ days }: { days: number }) {
+function ConsistencyRing({ days, streak }: { days: number; streak: number }) {
+  // Ring shows last 7 days consistency (visual), color intensity based on streak
   const pct = Math.min(days / 7, 1);
   const r = 14;
   const c = 2 * Math.PI * r;
+  const strokeColor = streak >= 7 ? "var(--color-peach-foreground)"
+    : streak >= 3 ? "var(--color-primary)"
+    : "var(--color-mint-foreground)";
   return (
     <svg width={36} height={36} className="-rotate-90">
       <circle cx={18} cy={18} r={r} fill="none" stroke="var(--color-primary-soft)" strokeWidth={4} />
@@ -174,7 +185,7 @@ function ConsistencyRing({ days }: { days: number }) {
         cy={18}
         r={r}
         fill="none"
-        stroke="var(--color-mint-foreground)"
+        stroke={strokeColor}
         strokeWidth={4}
         strokeLinecap="round"
         strokeDasharray={c}
