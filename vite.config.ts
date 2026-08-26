@@ -8,7 +8,13 @@ export default defineConfig({
   plugins: [
     tsConfigPaths(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      nitro: {
+        // Vercel preset — auto-detected by Vercel CI via NITRO_PRESET env var
+        // Locally uses node-server (default)
+        preset: process.env["NITRO_PRESET"] ?? "node-server",
+      },
+    }),
     viteReact(),
   ],
   resolve: {
