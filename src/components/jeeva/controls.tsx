@@ -64,8 +64,8 @@ export function RatingRow({
       <span className={cn("flex size-[42px] shrink-0 items-center justify-center rounded-full", toneClass)}>
         {icon}
       </span>
-      <span className="w-16 shrink-0 text-[16px] font-medium text-[#112A27]">{label}</span>
-      <div className="flex flex-1 items-center justify-end gap-2">
+      <span className="w-14 shrink-0 text-[15px] font-medium text-[#112A27]">{label}</span>
+      <div className="flex flex-1 items-center justify-end gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -74,7 +74,7 @@ export function RatingRow({
             aria-pressed={value === n}
             onClick={() => onChange(n)}
             className={cn(
-              "flex size-9 items-center justify-center rounded-full text-[15px] font-medium transition-colors border",
+              "flex size-8 shrink-0 items-center justify-center rounded-full text-[13px] font-medium transition-colors border",
               value === n
                 ? "bg-[#112A27] border-[#112A27] text-white"
                 : "border-[#EAE6DF] text-[#112A27] bg-white hover:bg-gray-50",
