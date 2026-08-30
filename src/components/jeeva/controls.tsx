@@ -65,7 +65,7 @@ export function RatingRow({
         {icon}
       </span>
       <span className="w-14 shrink-0 text-[15px] font-medium text-[#112A27]">{label}</span>
-      <div className="flex flex-1 items-center justify-end gap-1.5">
+      <div className="flex flex-1 items-center justify-between gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
